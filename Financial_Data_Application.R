@@ -28,7 +28,7 @@ if(RUN_MODEL){
   # The ERGM part of the model is a transitive.triads + reciprocity model
   net <- log_adjacency_matrix_list[[YEAR]]
   
-  formula.obj = net ~  recip + ttriads +in2star + out2star
+  formula.obj = net ~  in2star + out2star+  ttriads
   
   shape = 0.05
   sample_every = 2000
@@ -40,7 +40,7 @@ if(RUN_MODEL){
                   method = "Metropolis", max.num.iterations = 10, 
                   mc.num.iterations = 100, nsim = 2000000, 
                   MCMC.burnin = 200000, tolerance = 0.001, shape.parameter = shape, 
-                  together = 1, thin = 1/sample_every, weights = c(0.1, 0.1), gain.factor = 0.10)
+                  together = 1, thin = 1/sample_every, weights = c(0.03,0.03,0.03), gain.factor = 0.5)
   
   #Simulate MH to see if we have any goodness of fit?
   MH.sims <- simulate.gergm(MH.fit, 2000000, seed = seed, method = "Metropolis", MCMC.burnin = 10000, thin = 1/sample_every, together = 1)
@@ -49,16 +49,16 @@ if(RUN_MODEL){
   True.stats <- MH.fit@stats[1,]
   temp.stats <- MH.sims$Statistics
   #Re weighting the recip and ttriads to correct level
-  temp.stats$recip = temp.stats$recip ^ (1/0.1)
-  temp.stats$ttriads = temp.stats$ttriads ^ (1/0.1)
-  temp.stats$in2star = temp.stats$in2star ^ (1/0.1)
-  temp.stats$out2star = temp.stats$out2star ^ (1/0.1)
+  #temp.stats$recip = temp.stats$recip ^ (1/0.03)
+  temp.stats$ttriads = temp.stats$ttriads ^ (1/0.03)
+  temp.stats$in2stars = temp.stats$in2stars ^ (1/0.03)
+  temp.stats$out2stars = temp.stats$out2stars ^ (1/0.03)
 
   ## plot goodness of fit
   indx = order(True.stats)
   
   
-  setwd("~/Desktop/GERGM_Development/Output")
+  #setwd("~/Desktop/GERGM_Development/Output")
   pdf(file = paste("MH_GOF_",YEAR,".pdf",sep = ""), width = 7, height = 5)
   par(oma=c(1,1,1,1))
   par(mar=c(4,4.5,2,1))
@@ -69,7 +69,7 @@ if(RUN_MODEL){
   legend("bottomright", "Observed", lwd = 3, pch = 5, lty = 8, col = "blue", cex = 1.25)
   dev.off()
   save(MH.fit, MH.sims, file = paste("Financial_Data_RTIO_",YEAR,".RData",sep = ""))
-  setwd("~/Desktop/GERGM_Development")
+  #setwd("~/Desktop/GERGM_Development")
 }
 
 if(EVALUATE_OUTPUT){

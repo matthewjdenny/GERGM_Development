@@ -37,7 +37,7 @@ namespace mjd {
     // Returns the probability of [-inf,x] of a gaussian distribution
     double cdf(double x, double mu, double sigma)
     {
-        return 0.5 * (1 + std::erf((x - mu) / (sigma * sqrt(2.))));
+        return 0.5 * (1 + mjd::erf((x - mu) / (sigma * sqrt(2.))));
     }
     
   

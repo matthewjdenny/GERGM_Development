@@ -18,7 +18,7 @@ if(RUN_MODEL){
   # The ERGM part of the model is a transitive.triads + reciprocity model
   net <- log_adjacency_matrix_list[[1]]
   
-  formula.obj = net ~  recip + ttriads
+  formula.obj = net ~  recip + in2star + ttriads
   
   shape = 0.05
   sample_every = 2000
@@ -30,16 +30,17 @@ if(RUN_MODEL){
                   method = "Metropolis", max.num.iterations = 10, 
                   mc.num.iterations = 100, nsim = 2000000, 
                   MCMC.burnin = 200000, tolerance = 0.001, shape.parameter = shape, 
-                  together = 1, thin = 1/sample_every, weights = c(0.1, 0.1), gain.factor = 0.10)
+                  together = 1, thin = 1/sample_every, weights = c(0.05,0.05,0.05), gain.factor = 0.20)
   
   MPLE.fit <- gergm(formula.obj, directed = TRUE, seed = seed,
                     transform.data = NULL, MPLE.only = TRUE,
                     method = "Metropolis", max.num.iterations = 10, 
                     mc.num.iterations = 100, nsim = 2000000, 
                     MCMC.burnin = 200000, tolerance = 0.001, shape.parameter = shape, 
-                    together = 1, thin = 1/sample_every, weights = c(0.1, 0.1), gain.factor = 0.10)
+                    together = 1, thin = 1/sample_every, weights = c(0.05,0.05,0.05), gain.factor = 0.20)
   
   #Simulate MH to see if we have any goodness of fit?
+  shape = 0.001
   MH.sims <- simulate.gergm(MH.fit, 2000000, seed = seed, method = "Metropolis", MCMC.burnin = 10000, thin = 1/sample_every, together = 1)
   MPLE.sims <- simulate.gergm(MPLE.fit, 2000000, seed = seed, method = "Metropolis", MCMC.burnin = 10000, thin = 1/sample_every, together = 1)
   
@@ -47,11 +48,13 @@ if(RUN_MODEL){
   temp.stats <- MH.sims$Statistics
   temp2.stats <- MPLE.sims$Statistics
   #Re weighting the recip and ttriads to correct level
-  temp.stats$recip = temp.stats$recip ^ (1/0.1)
-  temp.stats$ttriads = temp.stats$ttriads ^ (1/0.1)
+  temp.stats$recip = temp.stats$recip ^ (1/0.05)
+  temp.stats$ttriads = temp.stats$ttriads ^ (1/0.05) 
+  temp.stats$in2stars = temp.stats$in2stars ^ (1/0.05)
   
-  temp2.stats$recip = temp2.stats$recip ^ (1/0.1)
-  temp2.stats$ttriads = temp2.stats$ttriads ^ (1/0.1)
+  temp2.stats$recip = temp2.stats$recip ^ (1/0.05)
+  temp2.stats$ttriads = temp2.stats$ttriads ^ (1/0.05)
+  temp2.stats$in2stars = temp2.stats$in2stars ^ (1/0.05)
   
   ## plot goodness of fit
   indx = order(True.stats)
@@ -72,8 +75,9 @@ if(RUN_MODEL){
   plot(unique(temp.stats[,6]), type = "l")
   
   
+  all.equal(MH.sims$Network[,,1], net)
   
-  save(MH.fit, MH.sims, MPLE.fit, MPLE.sims, file = "Financial_model_1.RData")
+  save(MH.fit, MH.sims, MPLE.fit, MPLE.sims, file = "Financial_model_3param.RData")
 }
 
 if(EVALUATE_OUTPUT){
